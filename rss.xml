@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[Byrne's Blog]]></title><description><![CDATA[Mostly programming thoughts, probably]]></description><link>https://blog.byrnehollander.com</link><generator>GatsbyJS</generator><lastBuildDate>Mon, 19 Apr 2021 18:55:30 GMT</lastBuildDate><item><title><![CDATA[Running Hasura on the Cheap]]></title><description><![CDATA[Side-project ready realtime GraphQL API over Postgres for just $5/month.]]></description><link>https://blog.byrnehollander.com/posts/running-hasura-cheaply</link><guid isPermaLink="false">https://blog.byrnehollander.com/posts/running-hasura-cheaply</guid><pubDate>Sun, 19 Apr 2020 12:40:32 GMT</pubDate><content:encoded>&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#self-hosting-hasura-graphql-engine-on-digitalocean&quot;&gt;Self-Hosting Hasura GraphQL Engine on DigitalOcean&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#hosting-a-postgres-database-on-heroku&quot;&gt;Hosting a Postgres Database on Heroku&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#the-biggest-issue-with-these-hosting-choices&quot;&gt;The Biggest Issue With These Hosting Choices&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;whats-hasura&quot; style=&quot;position:relative;&quot;&gt;&lt;a href=&quot;#whats-hasura&quot; aria-label=&quot;whats hasura permalink&quot; class=&quot;anchor before&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; focusable=&quot;false&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;What’s Hasura?&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&quot;https://hasura.io/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Hasura&lt;/a&gt; is the company that created the &lt;a href=&quot;https://github.com/hasura/graphql-engine#hasura-graphql-engine&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Hasura GraphQL Engine&lt;/a&gt;, a “blazing-fast GraphQL server that gives you instant, realtime GraphQL APIs over Postgres.” (For this blog post, I may use “Hasura” and “Hasura GraphQL Engine” interchangeably because this post is about self-hosting their GraphQL engine. But Hasura the company offers more than just their GraphQL engine.)&lt;/p&gt;
+&lt;p&gt;&lt;span
+      class=&quot;gatsby-resp-image-wrapper&quot;
+      style=&quot;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 640px; &quot;
+    &gt;
+      &lt;span
+    class=&quot;gatsby-resp-image-background-image&quot;
+    style=&quot;padding-bottom: 58.75%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAMCAIAAADtbgqsAAAACXBIWXMAAAsTAAALEwEAmpwYAAABrUlEQVQoz4VSbW/TMBDO/xcSEhIv4ofAStcAiTbBCqtSpd3ajamq+MC6oobY8cudz+YcrxA+cbJOzuUeP89zdlZV1W63CyF47wHAOccZEZ1DiIHB0w9ly/u2uG+XjdJKd50iIoZkD/u9EIJ3dAzGD/bc5BuL9UHVh24rDR9prWWmCA7/C3Ce+tYUPi6flGbTy/msWnyZzTfb76mU4rgPGr1CshgcecNenItV34PHeVmeT0eTcn1zp41phXTp9/Eg/jCODsbutdHoEn2KCB5NilFevB1/KM4+v8tLtvQo7yhBgH1Q2jr/C1wHhNRTh8R8dsHkl1VdnF+cnH5crm4H+qNadMRIzeIdSUsSyCAXfTabLxZX66q+uvm2qZer6dfqbrMdmucmBrfgPv3sGj7Dh8a4XYcKKBNd10opleLMno2xf2fWZyBSwErpVpi9RotkIPI7z1dlKK5454GfRnonQ2bmUhArmqJbiDf/6CV7snjz/Pr02fX4xXoi0QxH9WdgacAtEiMNZ0BrWQxlT5cnr9fvX67yV6tcgI5Pzf8TBOgtSiTB7kPoLDaybyP/G90hq6FfBbB5AAAAAElFTkSuQmCC&apos;); background-size: cover; display: block;&quot;
+  &gt;&lt;/span&gt;
+  &lt;picture&gt;
+          &lt;source
+              srcset=&quot;/static/bdaf6935507aea31c799075b0576efc0/60a22/hasura-landing.webp 160w,
+/static/bdaf6935507aea31c799075b0576efc0/4c812/hasura-landing.webp 320w,
+/static/bdaf6935507aea31c799075b0576efc0/0ba47/hasura-landing.webp 640w,
+/static/bdaf6935507aea31c799075b0576efc0/e46b2/hasura-landing.webp 960w,
+/static/bdaf6935507aea31c799075b0576efc0/af3f0/hasura-landing.webp 1280w,
+/static/bdaf6935507aea31c799075b0576efc0/9b34b/hasura-landing.webp 2418w&quot;
+              sizes=&quot;(max-width: 640px) 100vw, 640px&quot;
+              type=&quot;image/webp&quot;
+            /&gt;
+          &lt;source
+            srcset=&quot;/static/bdaf6935507aea31c799075b0576efc0/69538/hasura-landing.png 160w,
+/static/bdaf6935507aea31c799075b0576efc0/72799/hasura-landing.png 320w,
+/static/bdaf6935507aea31c799075b0576efc0/6af66/hasura-landing.png 640w,
+/static/bdaf6935507aea31c799075b0576efc0/d9199/hasura-landing.png 960w,
+/static/bdaf6935507aea31c799075b0576efc0/21b4d/hasura-landing.png 1280w,
+/static/bdaf6935507aea31c799075b0576efc0/12c06/hasura-landing.png 2418w&quot;
+            sizes=&quot;(max-width: 640px) 100vw, 640px&quot;
+            type=&quot;image/png&quot;
+          /&gt;
+          &lt;img
+            class=&quot;gatsby-resp-image-image&quot;
+            src=&quot;/static/bdaf6935507aea31c799075b0576efc0/6af66/hasura-landing.png&quot;
+            alt=&quot;Hasura Landing Page&quot;
+            title=&quot;Hasura Landing Page&quot;
+            loading=&quot;lazy&quot;
+            style=&quot;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&quot;
+          /&gt;
+        &lt;/picture&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;You can use the Hasura GUI to create Postgres tables and easily do standard Postgres things like set:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;columns&lt;/li&gt;
+&lt;li&gt;constraints&lt;/li&gt;
+&lt;li&gt;primary/foreign/unique keys&lt;/li&gt;
+&lt;li&gt;table relationships&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;span
+      class=&quot;gatsby-resp-image-wrapper&quot;
+      style=&quot;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 640px; &quot;
+    &gt;
+      &lt;span
+    class=&quot;gatsby-resp-image-background-image&quot;
+    style=&quot;padding-bottom: 45.62500000000001%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAJCAIAAAC9o5sfAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA7klEQVQoz4WQyW7DMAxE/f+/mB6aVLYsWxsparWdlE6TIi1cdPAOhMgZAdOpSQupNCZIzVNxVBnr0QGVtrZ1q+tW2nJIN07ThxCAiCF8ESjk5GKYY0TnwQPk2o7Ng5Sn05sc1fv50g9ykOOolLVGjj0nni+c3KdSj83Ww2ysttYC/7jUZb2zte3Gw7Jd1+s+HJuNsWpizZEiKxDthAe86vthnjUviX4SE5uNEMI5t5uIUkr5SeIsbgGRY/LL+2ObcgeAWmuuC+93pZT6FM/trnokPuwwkLGOK8ml/irmr5K/t7vZAUIgxmN4Nfxr/gSH9ASbq3TmFQAAAABJRU5ErkJggg==&apos;); background-size: cover; display: block;&quot;
+  &gt;&lt;/span&gt;
+  &lt;picture&gt;
+          &lt;source
+              srcset=&quot;/static/c7e25c3b342181d5fb3d497a58af8bfc/60a22/hasura-table-relationships.webp 160w,
+/static/c7e25c3b342181d5fb3d497a58af8bfc/4c812/hasura-table-relationships.webp 320w,
+/static/c7e25c3b342181d5fb3d497a58af8bfc/0ba47/hasura-table-relationships.webp 640w,
+/static/c7e25c3b342181d5fb3d497a58af8bfc/e46b2/hasura-table-relationships.webp 960w,
+/static/c7e25c3b342181d5fb3d497a58af8bfc/af3f0/hasura-table-relationships.webp 1280w,
+/static/c7e25c3b342181d5fb3d497a58af8bfc/6f9cd/hasura-table-relationships.webp 1884w&quot;
+              sizes=&quot;(max-width: 640px) 100vw, 640px&quot;
+              type=&quot;image/webp&quot;
+            /&gt;
+          &lt;source
+            srcset=&quot;/static/c7e25c3b342181d5fb3d497a58af8bfc/69538/hasura-table-relationships.png 160w,
+/static/c7e25c3b342181d5fb3d497a58af8bfc/72799/hasura-table-relationships.png 320w,
+/static/c7e25c3b342181d5fb3d497a58af8bfc/6af66/hasura-table-relationships.png 640w,
+/static/c7e25c3b342181d5fb3d497a58af8bfc/d9199/hasura-table-relationships.png 960w,
+/static/c7e25c3b342181d5fb3d497a58af8bfc/21b4d/hasura-table-relationships.png 1280w,
+/static/c7e25c3b342181d5fb3d497a58af8bfc/0e0c4/hasura-table-relationships.png 1884w&quot;
+            sizes=&quot;(max-width: 640px) 100vw, 640px&quot;
+            type=&quot;image/png&quot;
+          /&gt;
+          &lt;img
+            class=&quot;gatsby-resp-image-image&quot;
+            src=&quot;/static/c7e25c3b342181d5fb3d497a58af8bfc/6af66/hasura-table-relationships.png&quot;
+            alt=&quot;Table Relationships in Hasura&quot;
+            title=&quot;Table Relationships in Hasura&quot;
+            loading=&quot;lazy&quot;
+            style=&quot;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&quot;
+          /&gt;
+        &lt;/picture&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;All this data is then accessible through a single GraphQL endpoint. You can use the integrated &lt;a href=&quot;https://github.com/graphql/graphiql#overview&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;GraphiQL IDE&lt;/a&gt; to write queries, mutations, and subscriptions. &lt;/p&gt;
+&lt;p&gt;&lt;span
+      class=&quot;gatsby-resp-image-wrapper&quot;
+      style=&quot;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 640px; &quot;
+    &gt;
+      &lt;span
+    class=&quot;gatsby-resp-image-background-image&quot;
+    style=&quot;padding-bottom: 35.625%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAHCAIAAACHqfpvAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA8ElEQVQY022PSXKEMAxFuf8Zs6Gr0gEbjAdNHoloepPhlRaqsp6+NbXeS87BhzGG5PyY5+X5NMZs+6bsbr+bVTHGWrsuV6fNcRxTALKRxzgV9WMI7muvVIq0wrVJrZRb04jurDuOSCzIjHTVhJS3nYCK6r03YrZRPORe++jj7GM03TlUjhE+jfeLTzboCq1JqCTD5wtNEOYAEjGfP9EnZp5X//HYUoS3XGo1DpHrPUFEAaX38VdGos0nn5AlkwhJniRXlzjXfk8AgJq/1bfMLsDuEgTEiOjhStYTEpfWr8NKKed/vD6lMq42gA14JEL+Br/0lQDykqAyAAAAAElFTkSuQmCC&apos;); background-size: cover; display: block;&quot;
+  &gt;&lt;/span&gt;
+  &lt;picture&gt;
+          &lt;source
+              srcset=&quot;/static/343ec047fa066862e82f131af49250b5/60a22/graphiql.webp 160w,
+/static/343ec047fa066862e82f131af49250b5/4c812/graphiql.webp 320w,
+/static/343ec047fa066862e82f131af49250b5/0ba47/graphiql.webp 640w,
+/static/343ec047fa066862e82f131af49250b5/e46b2/graphiql.webp 960w,
+/static/343ec047fa066862e82f131af49250b5/af3f0/graphiql.webp 1280w,
+/static/343ec047fa066862e82f131af49250b5/7da0b/graphiql.webp 2506w&quot;
+              sizes=&quot;(max-width: 640px) 100vw, 640px&quot;
+              type=&quot;image/webp&quot;
+            /&gt;
+          &lt;source
+            srcset=&quot;/static/343ec047fa066862e82f131af49250b5/69538/graphiql.png 160w,
+/static/343ec047fa066862e82f131af49250b5/72799/graphiql.png 320w,
+/static/343ec047fa066862e82f131af49250b5/6af66/graphiql.png 640w,
+/static/343ec047fa066862e82f131af49250b5/d9199/graphiql.png 960w,
+/static/343ec047fa066862e82f131af49250b5/21b4d/graphiql.png 1280w,
+/static/343ec047fa066862e82f131af49250b5/16529/graphiql.png 2506w&quot;
+            sizes=&quot;(max-width: 640px) 100vw, 640px&quot;
+            type=&quot;image/png&quot;
+          /&gt;
+          &lt;img
+            class=&quot;gatsby-resp-image-image&quot;
+            src=&quot;/static/343ec047fa066862e82f131af49250b5/6af66/graphiql.png&quot;
+            alt=&quot;GraphiQL in Hasura&quot;
+            title=&quot;GraphiQL in Hasura&quot;
+            loading=&quot;lazy&quot;
+            style=&quot;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&quot;
+          /&gt;
+        &lt;/picture&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;Additionally, there are more advanced features like &lt;a href=&quot;https://hasura.io/docs/latest/graphql/core/auth/authorization/permission-rules.html&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;permissioning&lt;/a&gt;, &lt;a href=&quot;https://hasura.io/docs/latest/graphql/core/databases/postgres/schema/custom-functions.html&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;custom SQL functions&lt;/a&gt;, and &lt;a href=&quot;https://hasura.io/docs/latest/graphql/core/event-triggers/index.html&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;event triggers&lt;/a&gt;. Beyond their documentation, many of these topics are covered in &lt;a href=&quot;https://hasura.io/learn/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;their extremely handy tutorials&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;I’ve been building &lt;a href=&quot;https://trivia.digital&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Trivia.Digital&lt;/a&gt; with Hasura as my backend, and it’s made it very simple to configure my database and make my data accessible over a real-time GraphQL API. It’s &lt;a href=&quot;https://hasura.io/opensource/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;open-source&lt;/a&gt; and has &lt;a href=&quot;https://hasura.io/docs/latest/graphql/core/index.html&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;great documentation&lt;/a&gt; and I highly recommend it! As a relative noob to both Postgres and GraphQL, its UI is more beginner-friendly than a tool like &lt;a href=&quot;https://www.graphile.org/postgraphile/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;PostGraphile&lt;/a&gt; (though I’ve heard many great things about PostGraphile).&lt;/p&gt;
+&lt;p&gt;The biggest &lt;em&gt;potential&lt;/em&gt; downside of Hasura is that it can be relatively expensive for a hobbyist to use it for a side project. But it doesn’t have to be that way! Because their GraphQL Engine is open-source, I’ve been running it on &lt;a href=&quot;https://www.digitalocean.com/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;DigitalOcean&lt;/a&gt; for just $5/month.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;This post explains how you, too, can run Hasura for $5/month while avoiding some potential pitfalls.&lt;/strong&gt; &lt;em&gt;Caveat&lt;/em&gt;: I am not an expert on any of these topics, so my apologies if I’ve gotten anything wrong. If you have any suggestions, please email me at bhollander823@gmail.com.&lt;/p&gt;
+&lt;p&gt;Of course, this low bill is only possible because so many companies offer free plans for small projects. A &lt;em&gt;huge&lt;/em&gt; thank you to all of these companies for making their tools so accessible.&lt;/p&gt;
+&lt;details&gt;
+  &lt;summary&gt;Expand this if you want to read more about the non-Hasura parts of my stack.&lt;/summary&gt;
+  &lt;/br&gt;
+  I&apos;m using a 1-5 ⭐ system for how highly I recommend each tool, and I&apos;ve included some information about their financial situation so you can get a better sense of how likely they are to stick around. Hasura gets five stars from me (and they
+  &lt;a href=&quot;https://hasura.io/blog/announcing-our-series-b-25m-financing/&quot; target=&quot;_blank&quot;&gt;raised a Series B in September 2020&lt;/a&gt;).
+&lt;p&gt;  &lt;/br&gt;&lt;/br&gt;&lt;/p&gt;
+&lt;p&gt;  ⭐⭐⭐⭐⭐ &lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://vercel.com/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Vercel&lt;/a&gt; – Vercel is a “deployment and collaboration platform for frontend developers.” I’m hosting my frontend with them. They are the creators of the &lt;a href=&quot;https://nextjs.org/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Next.js React framework&lt;/a&gt; and also maintain &lt;a href=&quot;https://github.com/geist-org/react&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Geist&lt;/a&gt;, a minimal React UI library that I also use in my project. They last raised a &lt;a href=&quot;https://vercel.com/blog/series-b-40m-to-build-the-next-web&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Series B round&lt;/a&gt; in December 2020.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;GitHub&lt;/a&gt; – If you’re reading this, you probably already know about GitHub. You can host your code on GitHub, open and review pull requests there, etc. Every deploy to my &lt;code class=&quot;language-text&quot;&gt;main&lt;/code&gt; branch on GitHub automatically triggers a new Vercel deploy. I’m most familiar with GitHub, but other people love &lt;a href=&quot;https://about.gitlab.com/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;GitLab&lt;/a&gt;. They were &lt;a href=&quot;https://news.microsoft.com/announcement/microsoft-acquires-github/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;acquired by Microsoft in 2018&lt;/a&gt; for $7.5 billion.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;  ⭐⭐⭐⭐&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://getstream.io/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Stream&lt;/a&gt; – Stream is a tool that makes it easier to build scalable in-app chat and activity feeds. I’m using it so everyone in a game can talk to each other over text chat. They &lt;a href=&quot;https://getstream.io/blog/stream-series-b-funding-announcement/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;announced a Series B round&lt;/a&gt; in March 2021 and shortly after released &lt;a href=&quot;https://getstream.io/maker-account/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;a free plan for small businesses&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://sentry.io/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Sentry&lt;/a&gt; – Sentry is an application monitoring platform so you can get alerted of any errors in your app. Dead simple to integrate through Vercel. They last raised &lt;a href=&quot;https://techcrunch.com/2021/02/18/app-monitoring-platform-sentry-gets-60-million-series-d-at-1-billion-valuation/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;a Series D round&lt;/a&gt; in February 2021. &lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://heap.io/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Heap&lt;/a&gt; – Heap is a product analytics tool that makes it easy to capture and understand your product usage data. They raised a &lt;a href=&quot;https://heap.io/blog/company/our-55-million-series-c&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Series C round&lt;/a&gt; in July 2019.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://www.heroku.com/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Heroku&lt;/a&gt; – Heroku is a “cloud application platform” that makes it easy to deploy an app without spending too much time on infrastructure. I’m hosting my Postgres database with them. &lt;a href=&quot;https://techcrunch.com/2010/12/08/breaking-salesforce-buys-heroku-for-212-million-in-cash/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Purchased by Salesforce&lt;/a&gt; in 2010.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;  ⭐⭐⭐&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://jitsi.github.io/handbook/docs/dev-guide/dev-guide-iframe&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Jitsi&lt;/a&gt; – An open-source video chat platform. You can even run your video chats on their servers, for free! Less capable than some competitors (like Zoom, who now offer a &lt;a href=&quot;https://zoom.us/docs/en-us/video-sdk.html&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Video SDK&lt;/a&gt; that has a limited free plan) but incredible at the price point. Ownership has changed hands a bit, and was &lt;a href=&quot;http://social.techcrunch.com/2018/10/29/atlassian-sells-jitsi-an-open-source-videoconferencing-tool-it-acquired-in-2015-to-8x8/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;last sold to 8×8 from Atlassian in 2018&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&quot;https://auth0.com/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Auth0&lt;/a&gt; – An authentication provider that makes it easy enough to let users securely sign in to your app. It’s very nice to not worry too much about security, has its own login page I can redirect users to, and easily integrates with social login providers like Google. I don’t love their login page, so I might replace them with my own auth system. They were &lt;a href=&quot;https://auth0.com/blog/okta-auth0-announcement/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;sold to Okta for $6.5 billion&lt;/a&gt; in March 2021.&lt;/p&gt;
+&lt;/details&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;self-hosting-hasura-graphql-engine-on-digitalocean&quot; style=&quot;position:relative;&quot;&gt;&lt;a href=&quot;#self-hosting-hasura-graphql-engine-on-digitalocean&quot; aria-label=&quot;self hosting hasura graphql engine on digitalocean permalink&quot; class=&quot;anchor before&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; focusable=&quot;false&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;Self-Hosting Hasura GraphQL Engine on DigitalOcean&lt;/h2&gt;
+&lt;p&gt;While the &lt;a href=&quot;https://hasura.io/pricing/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;free tier of Hasura Cloud&lt;/a&gt; is perfect for development, you are limited to 60 requests/minute. That’s &lt;em&gt;probably&lt;/em&gt; not going to be enough for a production app. To get unlimited requests, you need to upgrade to the Standard tier which starts at $99/month. Because my site is more of a hobby project, I sought out a cheaper way to run my project in production.&lt;/p&gt;
+&lt;p&gt;Helpfully, Hasura has documentation on how to &lt;a href=&quot;https://hasura.io/docs/latest/graphql/core/deployment/deployment-guides/digital-ocean-one-click.html&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;easily deploy their GraphQL Engine&lt;/a&gt; to &lt;a href=&quot;https://www.digitalocean.com/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;DigitalOcean&lt;/a&gt;, where a virtual machine with 1 GB memory and 25 GB disk will run you $5/month. Seems like a good deal to me! &lt;/p&gt;
+&lt;h2 id=&quot;hosting-a-postgres-database-on-heroku&quot; style=&quot;position:relative;&quot;&gt;&lt;a href=&quot;#hosting-a-postgres-database-on-heroku&quot; aria-label=&quot;hosting a postgres database on heroku permalink&quot; class=&quot;anchor before&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; focusable=&quot;false&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;Hosting a Postgres Database on Heroku&lt;/h2&gt;
+&lt;p&gt;Hasura additionally has a guide to &lt;a href=&quot;https://hasura.io/docs/latest/graphql/core/deployment/deployment-guides/digital-ocean-one-click.html#using-digitalocean-managed-postgres-database&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;creating a DigitalOcean managed Postgres database&lt;/a&gt;. But those start at a comparatively steep $15/month.&lt;/p&gt;
+&lt;p&gt;Thankfully, it’s incredibly easy to create a free database hosted on &lt;a href=&quot;https://www.heroku.com/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Heroku&lt;/a&gt; when you create a new Hasura project. For the low price of free, you can store up to 1 GB across 10k rows. For $9/month, your storage limit dramatically increases to 10 GB across ten million rows.&lt;/p&gt;
+&lt;p&gt;&lt;span
+      class=&quot;gatsby-resp-image-wrapper&quot;
+      style=&quot;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 640px; &quot;
+    &gt;
+      &lt;span
+    class=&quot;gatsby-resp-image-background-image&quot;
+    style=&quot;padding-bottom: 53.75%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAAAsTAAALEwEAmpwYAAABVUlEQVQoz3WR2U7DMBBF+///gASvSPAZPAGiUjf6kJQ0TeKExPG+jO3i0LK0Ta2rkUea45k7nuRFsS3QtmqLllZYdlSg5rNp+xI1TYu1dcqAtuOaFGW1K6tNlnEpXQgWTAjgvA3BeQ8+gAFzFU7SNPk+7+v1rigJQVk6K/N1ls7zj+Vs+oQ7ZF1Qxo7AqG6iKoQqVHcYC20Jk0xqKhUVKtuVMWpwysKZBtiF/Z98sM7F4ZWCvlWcGi2dBW/dhcANcPR3puhVK9fVknSa9sZaf1lzhEc3wYSgglM+SCh1dWG/NxONAWiIfizhvGeso7SnjAl5rIGhZgSOS+kwEVRxHl8IAF4wJamWUnu/N8YxIjiRXU+kNidwbBWNFaS5XT4keLshRUaqab26WdwnOD+kb2h5t3qMPf7/2Q8MLrZ5aeZEC6x4jI3sn+tDyqgWtcCv9cKejv0FcVV1JXu/0FoAAAAASUVORK5CYII=&apos;); background-size: cover; display: block;&quot;
+  &gt;&lt;/span&gt;
+  &lt;picture&gt;
+          &lt;source
+              srcset=&quot;/static/02e911f8477bda3e2a694267b992520e/60a22/create-heroku-database.webp 160w,
+/static/02e911f8477bda3e2a694267b992520e/4c812/create-heroku-database.webp 320w,
+/static/02e911f8477bda3e2a694267b992520e/0ba47/create-heroku-database.webp 640w,
+/static/02e911f8477bda3e2a694267b992520e/e46b2/create-heroku-database.webp 960w,
+/static/02e911f8477bda3e2a694267b992520e/af3f0/create-heroku-database.webp 1280w,
+/static/02e911f8477bda3e2a694267b992520e/0b448/create-heroku-database.webp 1474w&quot;
+              sizes=&quot;(max-width: 640px) 100vw, 640px&quot;
+              type=&quot;image/webp&quot;
+            /&gt;
+          &lt;source
+            srcset=&quot;/static/02e911f8477bda3e2a694267b992520e/69538/create-heroku-database.png 160w,
+/static/02e911f8477bda3e2a694267b992520e/72799/create-heroku-database.png 320w,
+/static/02e911f8477bda3e2a694267b992520e/6af66/create-heroku-database.png 640w,
+/static/02e911f8477bda3e2a694267b992520e/d9199/create-heroku-database.png 960w,
+/static/02e911f8477bda3e2a694267b992520e/21b4d/create-heroku-database.png 1280w,
+/static/02e911f8477bda3e2a694267b992520e/f3abf/create-heroku-database.png 1474w&quot;
+            sizes=&quot;(max-width: 640px) 100vw, 640px&quot;
+            type=&quot;image/png&quot;
+          /&gt;
+          &lt;img
+            class=&quot;gatsby-resp-image-image&quot;
+            src=&quot;/static/02e911f8477bda3e2a694267b992520e/6af66/create-heroku-database.png&quot;
+            alt=&quot;Create Heroku Database&quot;
+            title=&quot;Create Heroku Database&quot;
+            loading=&quot;lazy&quot;
+            style=&quot;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&quot;
+          /&gt;
+        &lt;/picture&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;You might now be thinking, “If I’m going to host my database on Heroku, why don’t I just host Hasura GraphQL Engine on Heroku too?” Well, the approximate Heroku equivalent of a &lt;a href=&quot;https://www.digitalocean.com/products/droplets/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;DigitalOcean Droplet&lt;/a&gt; is called a ”&lt;a href=&quot;https://www.heroku.com/dynos&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;dyno&lt;/a&gt;,” and a dyno that doesn’t auto-sleep starts at $7/month. So a dyno is generally a bit more expensive than the Droplet-equivalent. Still, Heroku is a “Platform as a Service” while DigitalOcean is “Infrastructure as a Service”, so Heroku &lt;em&gt;does&lt;/em&gt; offer you additional features for your money if you choose to go that route.&lt;/p&gt;
+&lt;h2 id=&quot;the-biggest-issue-with-these-hosting-choices&quot; style=&quot;position:relative;&quot;&gt;&lt;a href=&quot;#the-biggest-issue-with-these-hosting-choices&quot; aria-label=&quot;the biggest issue with these hosting choices permalink&quot; class=&quot;anchor before&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; focusable=&quot;false&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;The Biggest Issue With These Hosting Choices&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;The biggest downside to this approach is that you must manually sync your Heroku database URL with your self-hosted Hasura GraphQL Engine.&lt;/strong&gt; Before I implemented what I describe below, &lt;strong&gt;my site was unusable after Heroku maintenance&lt;/strong&gt;.&lt;/p&gt;
+&lt;h3 id=&quot;why-you-need-this&quot; style=&quot;position:relative;&quot;&gt;&lt;a href=&quot;#why-you-need-this&quot; aria-label=&quot;why you need this permalink&quot; class=&quot;anchor before&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; focusable=&quot;false&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;Why You Need This&lt;/h3&gt;
+&lt;p&gt;There is own major downside to a free Heroku database: maintenance. After maintenance, &lt;em&gt;your database credentials change&lt;/em&gt;. So, &lt;em&gt;you must&lt;/em&gt; update your database credentials in your self-hosted Hasura GraphQL Engine so your app can continue to connect to your database.&lt;/p&gt;
+&lt;span class=&quot;gatsby-resp-image-wrapper&quot; style=&quot;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 640px; &quot;&gt;
+      &lt;span class=&quot;gatsby-resp-image-background-image&quot; style=&quot;padding-bottom: 77.5%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAQCAIAAACZeshMAAAACXBIWXMAAAsTAAALEwEAmpwYAAABb0lEQVQoz5WS227CQAxE9///rby1tEhAbk1CNiE3IEQobU92YItaCYl5sMaWL2PvmtXC5mEfvNXZtruM0/czMKtFEb3XHy92+1qNw4XQ1x3+uD54LX7c+z71f9y0bWNtWVX7/b4uy9Ja2zRN3/eQOI7HcYRUVUXweDzWdQ35nRyGIUm73S7LsiiKPh1wgyBYLpdJkmwdSCMBN89zerVtOxeTRIiC3IGkxCFNU5qKQ+hLBBs7aL7xedkNuAQZThDNpYMGsltRFPBhGOZiQmx4OBxQAu+6DhcOwZ7P50dPRVf66SpALpVY3U/DcRFlb8Dl4Gaz2SAPqVyFzbVS6qBbaCmIDgaQNk3TXKxT00x7so9cIE6NCKARcd7sKnu9XlPmj6z2fppUdA4M5Mgi12IcrqWbAbp6orzT6aQvhVT/W8WNnocH0HpSiCUoIiGSBtHyiJ93xuGfYPVUfEBui9U30iNDaITVE2Cl3GgTf4On8ANk54TcQQJXxQAAAABJRU5ErkJggg==&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;picture&gt;
+          &lt;source srcset=&quot;/static/6333431b7bc3b2100c30a09a1714068b/60a22/heroku-maintenance-email.webp 160w,
+/static/6333431b7bc3b2100c30a09a1714068b/4c812/heroku-maintenance-email.webp 320w,
+/static/6333431b7bc3b2100c30a09a1714068b/0ba47/heroku-maintenance-email.webp 640w,
+/static/6333431b7bc3b2100c30a09a1714068b/e46b2/heroku-maintenance-email.webp 960w,
+/static/6333431b7bc3b2100c30a09a1714068b/260c2/heroku-maintenance-email.webp 1080w&quot; sizes=&quot;(max-width: 640px) 100vw, 640px&quot; type=&quot;image/webp&quot;&gt;
+          &lt;source srcset=&quot;/static/6333431b7bc3b2100c30a09a1714068b/69538/heroku-maintenance-email.png 160w,
+/static/6333431b7bc3b2100c30a09a1714068b/72799/heroku-maintenance-email.png 320w,
+/static/6333431b7bc3b2100c30a09a1714068b/6af66/heroku-maintenance-email.png 640w,
+/static/6333431b7bc3b2100c30a09a1714068b/d9199/heroku-maintenance-email.png 960w,
+/static/6333431b7bc3b2100c30a09a1714068b/302a4/heroku-maintenance-email.png 1080w&quot; sizes=&quot;(max-width: 640px) 100vw, 640px&quot; type=&quot;image/png&quot;&gt;
+          &lt;img class=&quot;gatsby-resp-image-image&quot; src=&quot;/static/6333431b7bc3b2100c30a09a1714068b/6af66/heroku-maintenance-email.png&quot; alt=&quot;Heroku Maintenance Notice&quot; title=&quot;Heroku Maintenance Notice&quot; loading=&quot;lazy&quot; style=&quot;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&quot;&gt;
+        &lt;/picture&gt;
+    &lt;/span&gt;
+&lt;p&gt;Hasura Cloud offers ”&lt;a href=&quot;https://hasura.io/docs/latest/graphql/cloud/projects/heroku-url-sync.html&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Heroku URL Sync&lt;/a&gt;” to keep your project’s &lt;code class=&quot;language-text&quot;&gt;HEROKU_DATABASE_URL&lt;/code&gt; in sync. Unfortunately, this feature is only available for Hasura Cloud users. &lt;em&gt;Fortunately&lt;/em&gt;, I’m about to tell you how to build this feature for your self-hosted Hasura GraphQL Engine. If all goes well, this should take you less than an hour. If it goes &lt;em&gt;really&lt;/em&gt; well, it might only take you 15 minutes.&lt;/p&gt;
+&lt;h3 id=&quot;1-create-a-webhook-server&quot; style=&quot;position:relative;&quot;&gt;&lt;a href=&quot;#1-create-a-webhook-server&quot; aria-label=&quot;1 create a webhook server permalink&quot; class=&quot;anchor before&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; focusable=&quot;false&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;1. Create a Webhook Server&lt;/h3&gt;
+&lt;p&gt;&lt;a href=&quot;https://zapier.com/blog/what-are-webhooks/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Webhooks&lt;/a&gt; are a way for apps to send automated messages to other apps. In this case, &lt;strong&gt;we want Heroku to tell us when our database credentials change&lt;/strong&gt; so we can update them in our GraphQL Engine.&lt;/p&gt;
+&lt;p&gt;Adnan Hajdarević’s open-source &lt;a href=&quot;https://github.com/adnanh/webhook#what-is-webhook-&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;webhook&lt;/a&gt; tool makes it easy to spin-up a server that will receive event notifications via webhook. Your Droplet is probably running Ubuntu 18+, so after &lt;a href=&quot;https://docs.digitalocean.com/products/droplets/how-to/connect-with-ssh/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;SSH’ing into your Droplet&lt;/a&gt;, you can install &lt;code class=&quot;language-text&quot;&gt;webhook&lt;/code&gt; with the following command:&lt;/p&gt;
+&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;sudo apt-get install webhook&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Once &lt;code class=&quot;language-text&quot;&gt;webhook&lt;/code&gt; is installed, you’ll need to create a configuration file that defines the hooks that &lt;code class=&quot;language-text&quot;&gt;webhook&lt;/code&gt; will serve.&lt;/p&gt;
+&lt;p&gt;Here’s what my &lt;code class=&quot;language-text&quot;&gt;hooks.json&lt;/code&gt; file looks like (except with correct paths, of course):&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;json&quot;&gt;&lt;pre class=&quot;language-json&quot;&gt;&lt;code class=&quot;language-json&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;token property&quot;&gt;&quot;id&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;redeploy-webhook&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;token property&quot;&gt;&quot;execute-command&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;/path/to/redeploy.sh&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;token property&quot;&gt;&quot;command-working-directory&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;/path/to/folder/with/docker-compose.yaml&quot;&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;When the webhook receives the new Heroku release event (we’ll get to that in the next section!) it executes the &lt;code class=&quot;language-text&quot;&gt;redeploy.sh&lt;/code&gt; script in the directory with our &lt;code class=&quot;language-text&quot;&gt;docker-compose.yaml&lt;/code&gt; file. Note that we don’t actually care about the event payload – we only care about knowing that something has changed with our Heroku database’s configuration and then running our script.&lt;/p&gt;
+&lt;p&gt;Our script will fetch the new database URL from Heroku and parse the database password from the URL. It’ll then update our &lt;code class=&quot;language-text&quot;&gt;.env&lt;/code&gt; file with these new values. Finally, it will restart the Docker containers.&lt;/p&gt;
+&lt;p&gt;Here’s what the &lt;code class=&quot;language-text&quot;&gt;redeploy.sh&lt;/code&gt; bash script looks like (make sure it’s excecutable by running &lt;code class=&quot;language-text&quot;&gt;chmod +x redeploy.sh&lt;/code&gt;):&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;shell&quot;&gt;&lt;pre class=&quot;language-shell&quot;&gt;&lt;code class=&quot;language-shell&quot;&gt;&lt;span class=&quot;token shebang important&quot;&gt;#!/bin/sh&lt;/span&gt;
+&lt;span class=&quot;token assign-left variable&quot;&gt;URL&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token variable&quot;&gt;&lt;span class=&quot;token variable&quot;&gt;$(&lt;/span&gt;heroku config:get DATABASE_URL -a YOUR-HEROKU-APP-NAME&lt;span class=&quot;token variable&quot;&gt;)&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;token assign-left variable&quot;&gt;PW&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token variable&quot;&gt;&lt;span class=&quot;token variable&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;token builtin class-name&quot;&gt;echo&lt;/span&gt; $URL &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;grep&lt;/span&gt; -Po &lt;span class=&quot;token string&quot;&gt;&quot;[a-zA-Z0-9]+?(?=@)&quot;&lt;/span&gt;&lt;span class=&quot;token variable&quot;&gt;)&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;token builtin class-name&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;DATABASE_URI=&lt;span class=&quot;token variable&quot;&gt;$URL&lt;/span&gt;&lt;span class=&quot;token entity&quot; title=&quot;\n&quot;&gt;\n&lt;/span&gt;DATABASE_PASSWORD=&lt;span class=&quot;token variable&quot;&gt;$PW&lt;/span&gt;&quot;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; .env
+docker-compose restart&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Before this script will work, we need to install the Heroku CLI and authenticate ourselves. We can do this on Ubuntu with the following command:&lt;/p&gt;
+&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;sudo snap install --classic heroku&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Then, run:&lt;/p&gt;
+&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;heroku login -i&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;and enter your login credentials. You’ll also need to replace &lt;code class=&quot;language-text&quot;&gt;YOUR-HEROKU-APP-NAME&lt;/code&gt; in &lt;code class=&quot;language-text&quot;&gt;redeploy.sh&lt;/code&gt; with the name of the app that has the &lt;code class=&quot;language-text&quot;&gt;Heroku Postgres&lt;/code&gt; add-on installed. You can use the Heroku CLI to get a list of all your Heroku apps by running &lt;code class=&quot;language-text&quot;&gt;heroku apps&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Next, start the webhook server with the following command (be sure to replace &lt;code class=&quot;language-text&quot;&gt;your-domain.com&lt;/code&gt; with an address associated with the Droplet you’ve SSH’d into):&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;webhook -hooks /path/to/hooks.json -ip &amp;quot;your-domain.com&amp;quot; -port 9003&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;The hook is now available at &lt;a href=&quot;http://your-domain.com:9003/hooks/redeploy-webhook&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;http://your-domain.com:9003/hooks/redeploy-webhook&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Note that I’ve chosen port &lt;code class=&quot;language-text&quot;&gt;9003&lt;/code&gt; arbitrarily – I cannot vouch for this port beyond that it functionally works for my application and it’s not used by anything else. Also note that the webhook is currently using the insecure &lt;code class=&quot;language-text&quot;&gt;http&lt;/code&gt; protocol.&lt;/p&gt;
+&lt;p&gt;To upgrade to &lt;code class=&quot;language-text&quot;&gt;https&lt;/code&gt; you need to find some certs (more on this in a moment) and then run the following command:&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;webhook -hooks /path/to/hooks.json -secure -cert /path/to/public.crt -key path/to/private.key -ip &amp;quot;your-domain.com&amp;quot; -port 9003&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;After running this command, your hook will be available at &lt;a href=&quot;https://your-domain.com:9003/hooks/redeploy-webhook&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;https://your-domain.com:9003/hooks/redeploy-webhook&lt;/a&gt; – much better!&lt;/p&gt;
+&lt;p&gt;If you’ve deployed the Hasura GraphQL Engine with &lt;a href=&quot;https://marketplace.digitalocean.com/apps/hasura-graphql&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;the app on the DigitalOcean Marketplace&lt;/a&gt;, one of its dependencies – &lt;a href=&quot;https://caddyserver.com/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Caddy&lt;/a&gt; – will automatically obtain and renew TLS certificates for you when you run &lt;code class=&quot;language-text&quot;&gt;docker-compose up&lt;/code&gt;. These certs are stored in a &lt;a href=&quot;https://docs.docker.com/storage/volumes/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Docker Volume&lt;/a&gt;, so you can peek in there to either provide a path to them &lt;em&gt;or&lt;/em&gt; just copy them to a different directory. Do note that the &lt;code class=&quot;language-text&quot;&gt;webhook&lt;/code&gt; &lt;code class=&quot;language-text&quot;&gt;-cert&lt;/code&gt; flag expects a public key and the &lt;code class=&quot;language-text&quot;&gt;-key&lt;/code&gt; flag expects a private key. You can find &lt;a href=&quot;https://github.com/adnanh/webhook/blob/master/docs/Webhook-Parameters.md&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;the full documentation on &lt;code class=&quot;language-text&quot;&gt;webhook parameters&lt;/code&gt; here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;You will need to be a bit careful not to restart the Docker containers &lt;em&gt;too&lt;/em&gt; often as it seems that Hasura’s DigitalOcean Marketplace app isn’t actually re-using TLS credentials across restarts; instead, it’s regenerating new certs each time. And you’re not going to have a great time if you run into &lt;a href=&quot;https://letsencrypt.org/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Let’s Encrypt&lt;/a&gt;’s &lt;a href=&quot;https://letsencrypt.org/docs/rate-limits/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;rate-limit&lt;/a&gt;. Addressing this may be a topic of a future blog post. Anyway, the takeaways should be: 1. Consider removing the &lt;code class=&quot;language-text&quot;&gt;docker-compose restart&lt;/code&gt; line from your &lt;code class=&quot;language-text&quot;&gt;redeploy.sh&lt;/code&gt; file while you’re testing , and 2. You don’t want to hit this webhook &lt;em&gt;too&lt;/em&gt; often.&lt;/p&gt;
+&lt;p&gt;One last tip: when you run the above &lt;code class=&quot;language-text&quot;&gt;webhook&lt;/code&gt; command, add an &lt;code class=&quot;language-text&quot;&gt;&amp;amp;&lt;/code&gt; to the end of it so the command runs in the background – you don’t want the server to stop after you’ve closed your shell session.&lt;/p&gt;
+&lt;h3 id=&quot;2-configure-docker-composeyaml-to-use-environment-variables&quot; style=&quot;position:relative;&quot;&gt;&lt;a href=&quot;#2-configure-docker-composeyaml-to-use-environment-variables&quot; aria-label=&quot;2 configure docker composeyaml to use environment variables permalink&quot; class=&quot;anchor before&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; focusable=&quot;false&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;2. Configure docker-compose.yaml to Use Environment Variables&lt;/h3&gt;
+&lt;p&gt;This step should be refreshingly straightforward! Instead of directly setting &lt;code class=&quot;language-text&quot;&gt;POSTGRES_PASSWORD&lt;/code&gt; and &lt;code class=&quot;language-text&quot;&gt;HASURA_GRAPHQL_DATABASE_URL&lt;/code&gt; in &lt;code class=&quot;language-text&quot;&gt;docker-compose.yaml&lt;/code&gt;, you should access their values from &lt;a href=&quot;https://medium.com/chingu/an-introduction-to-environment-variables-and-how-to-use-them-f602f66d15fa&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;environment variables&lt;/a&gt;. We already named these env vars in &lt;code class=&quot;language-text&quot;&gt;redeploy.sh&lt;/code&gt;, so you can reference them like so:&lt;/p&gt;
+&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;POSTGRES_PASSWORD: &amp;quot;${DATABASE_PASSWORD}&amp;quot;&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;and&lt;/p&gt;
+&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;HASURA_GRAPHQL_DATABASE_URL: &amp;quot;${DATABASE_URI}&amp;quot;&lt;/code&gt;&lt;/p&gt;
+&lt;h3 id=&quot;3-tell-heroku-about-your-webhook-url&quot; style=&quot;position:relative;&quot;&gt;&lt;a href=&quot;#3-tell-heroku-about-your-webhook-url&quot; aria-label=&quot;3 tell heroku about your webhook url permalink&quot; class=&quot;anchor before&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; focusable=&quot;false&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;3. Tell Heroku About Your Webhook URL&lt;/h3&gt;
+&lt;p&gt;We’re in the home stretch!&lt;/p&gt;
+&lt;p&gt;Navigate to your Heroku app running your Postgres database. The URL will look something like &lt;a href=&quot;https://dashboard.heroku.com/apps/YOUR-HEROKU-APP-NAME&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;https://dashboard.heroku.com/apps/YOUR-HEROKU-APP-NAME&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Then, click &lt;code class=&quot;language-text&quot;&gt;More&lt;/code&gt; in the top-right and then &lt;code class=&quot;language-text&quot;&gt;View webhooks&lt;/code&gt;.&lt;/p&gt;
+&lt;span class=&quot;gatsby-resp-image-wrapper&quot; style=&quot;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 492px; &quot;&gt;
+      &lt;span class=&quot;gatsby-resp-image-background-image&quot; style=&quot;padding-bottom: 111.25%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAWCAIAAABPIytRAAAACXBIWXMAAAsTAAALEwEAmpwYAAACfElEQVQ4y41T2XLbMAz0/39Yn/LQtB0nseNEtiXr5E2CpK50aSWuk4lnyoE4SwjHAiBXPgyLWBd5ayRzRpKRHmJ10IJYawRz0EvujPLQQHhrHfUrR3G9PWrrrQne9bzWD3fH466tjmJzX2jhtPRSOO8ijtljwypNNiKKMWFFvufCWoqM27qUXavzrK1LUZ3E4aVpa1UBl0Iw01QSemhYp7tGg2lyBgFtqB9G54I1PobRU+8pxjhoTc56R0FJZzQZQ1onoJRTxq+maXY++BCENOSj1jYv644LJmTT8Wma3r5bIfbG0QrI+0g+KOOs8zH2bSeE1NgPxxKhF+v5aiWXEFFqcg4hKmMtOLugjRMIQxFYKttxBUYdU6guxGGR2I/a0rszMiPn5uX0sq+rhv389fi0zR43r/e/nx6edgB/1s9KU4jjMlQA9Cg5T/MMzlLbvh8RchoTLVQKvvNZFox2wmCRYZis9eB4yUzjNA3j+0Kf/iHUPc9fG3apGZnRvd3+lOV13XTbXda0/JCXr/t885wJqZaGfe+8ZL78uJjBYfpo783MPs05lg2vGsGFLMq6rNq6YdjTzJgAi6rulrEtoT45gzlGAoH2PGSOKCBsjFMaAwPWN5xDxNwuVN9uLDgvAhMku6YdXg/VoWiIfNcJpY2xuHAkleYcJ/flnn7qduz79Wb/427tHD0jTN3mp3qfn4DzojoWFaxvNOw/aIPseIN2dOfsEDwMooDAy9EnmJTjLdpwhgXmIpRtGd/ssi1uTNWA7fmqFNmhQLe/PEm7PEkUDIQ9lT4M+NL+AUAJ6msZhoHO010t9aS3oQwXignFryQd5ScNBCyQDA/hL2ZX8G8v+cfCAAAAAElFTkSuQmCC&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;picture&gt;
+          &lt;source srcset=&quot;/static/33434c836dc7ebdb70ee9f82f825be20/60a22/create-heroku-webhook-1-of-2.webp 160w,
+/static/33434c836dc7ebdb70ee9f82f825be20/4c812/create-heroku-webhook-1-of-2.webp 320w,
+/static/33434c836dc7ebdb70ee9f82f825be20/9d6da/create-heroku-webhook-1-of-2.webp 492w&quot; sizes=&quot;(max-width: 492px) 100vw, 492px&quot; type=&quot;image/webp&quot;&gt;
+          &lt;source srcset=&quot;/static/33434c836dc7ebdb70ee9f82f825be20/69538/create-heroku-webhook-1-of-2.png 160w,
+/static/33434c836dc7ebdb70ee9f82f825be20/72799/create-heroku-webhook-1-of-2.png 320w,
+/static/33434c836dc7ebdb70ee9f82f825be20/5c6e9/create-heroku-webhook-1-of-2.png 492w&quot; sizes=&quot;(max-width: 492px) 100vw, 492px&quot; type=&quot;image/png&quot;&gt;
+          &lt;img class=&quot;gatsby-resp-image-image&quot; src=&quot;/static/33434c836dc7ebdb70ee9f82f825be20/5c6e9/create-heroku-webhook-1-of-2.png&quot; alt=&quot;Create Heroku Webhook 1 of 2&quot; title=&quot;Create Heroku Webhook 1 of 2&quot; loading=&quot;lazy&quot; style=&quot;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&quot;&gt;
+        &lt;/picture&gt;
+    &lt;/span&gt;
+&lt;p&gt;On the new page, click &lt;code class=&quot;language-text&quot;&gt;Create Webhook&lt;/code&gt;. Enter in your URL from before – in this case, &lt;a href=&quot;https://your-domain.com:9003/hooks/redeploy-webhook&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;https://your-domain.com:9003/hooks/redeploy-webhook&lt;/a&gt; – and only select the &lt;code class=&quot;language-text&quot;&gt;api:release&lt;/code&gt; event type. If you’d like to set a secret, refer to &lt;a href=&quot;https://github.com/adnanh/webhook/blob/master/docs/Hook-Rules.md&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;the &lt;code class=&quot;language-text&quot;&gt;webhook rules&lt;/code&gt; documentation&lt;/a&gt;.&lt;/p&gt;
+&lt;span class=&quot;gatsby-resp-image-wrapper&quot; style=&quot;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 640px; &quot;&gt;
+      &lt;span class=&quot;gatsby-resp-image-background-image&quot; style=&quot;padding-bottom: 235.62499999999997%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAvCAIAAABsVn00AAAACXBIWXMAAAsTAAALEwEAmpwYAAAEnUlEQVRIx5VWOY8kNRTu/0rIHyAhWDYiIGEQQhrildglQiAmQ4w224CIEM3RR5WPsl22q3zVwWfXzE7PbPf2TOnJeuXj+b3vXV6xRtmu16Yz9mFstcWotNG2N/vUZdKF2VR0hU3zPE/TNN9/4IVspdI15YQ1jIv91WWD7R2hzarVncI+0jSNwj+2ci4J4TVhxnQhRO9DDDHGlNIwDOM4TOOYZe1IsxLKCqV2lDIhasYJ5+A3db0lVBntY3DBe0iIwacQhhiHhBGHr3dsJbUJY1Ctgqa4FcI/qjdOuGZI+zSCUoSIKW4rvlLauuilVq3VjZJ9cD75UC7J94wHKAxhmIe7wwDmelNVhN1uqs2OXN2sY9/Px78Fv23NVy08EJ1oVdsZXUjBTa6zrpNGQaM82VvdG6iGSfy2nU5TqqlYKWNd6gmjQgn4RbSypoRyxgSvGQHBAxixYVttCSMVqWtG/Rjy4RwMreZSMSEpF3As/DJ/9lvUruDnHE/GcCWpaOBsjJ3v45gWwA4SfDbNU4Wb4SpAN8IvkDhP4zwNdy45StnVU8xqA7BhHrPrxpSeR9iMy6rF5iexffJ7ZPPyv0xN98tT4R+Yffp4WLZGCIHQrqoKPnrZzbAZnkZwCqnBI8mQzIXgQstFq00vsaoQLtZ2DpmMeaRXzYrNSG7KpFQGIcKlbqQmTOYd49D7gFRBLuaMLCmJEen5yOaEREWq5vHe+OMQPqitWuOdI0zcbsnNhnS9w1oRNUFWYfL4pNQ8uhkiBHI/m2egMAjmsabFJKwAHND2EGAa1iODkYUelbAwrit0TPM9tbVJEWWBXd1W6y293dLrdb2r+c2WQKkiYp4+HyTQKmVUR9yNy2ManA/QvHf+BGDWGFRvXA6Dy9qzg6QRLbhGaMoVFwoj3A6cEB4YD5q9b7MFtyhpC0j4xvvvVHi2JgQPnYHTpmKA4GSGPQXMhehKW8Dv0hCedRiu8t4BKhiP4gDkYPYxhQ/fDHjg2x3hlMuCHKzJWQXMIBdxevzwNMHJWevSzbCwBDOGki3DPE9H/YxOBqiu1hUSA5UJEQIhIffGtB/SxwHzMceWD2gQsmTIkhLL6nFXaRsjumQOMgTbC8uQtrAMIAGtikAAqlLflB4FqMCfVhu2wUIQlAdsMHtJlYM++7SSSGCGromsXIIsl6tSsZa6VZg8xnQn8eFm6IkIWaBCksDJuSQrjRlonkNI4oWCTmxoI5EIjw5D25wVp0D6JCVV92E9l0ZrAThKxwvQlm13q/IbYbGZoHAbvOP6zkEXD42Q3m1uwxDr4Xx4J5VHz6J29i36Q7YZJjGJ9ASPNYAH52Hc7OgaDywu+yzOoU3mw6TYjAdT33mL2zokWOhQFUyP1wnKKGBGmDqXgw8BO+4V8HxYSpPCsPQK2zpe4/USIA57wJx/c/Htl+/OX/0J5ufXF2DOvvrt9Rdv3v/+rzAalcTO0GLM5G3UAm+jlH+nObj064/vz19d/PL932/PLt/+cPnu7PLNd3/99PUf/1z+J7RewTaUAUIFrOWNamTLuAJPKR6EbR+9S966HmQKdTCizFyvq/8Bm/OR8JV6KdcAAAAASUVORK5CYII=&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;picture&gt;
+          &lt;source srcset=&quot;/static/3d7832b165fe0ca1641d5ecf66707258/60a22/create-heroku-webhook-2-of-2.webp 160w,
+/static/3d7832b165fe0ca1641d5ecf66707258/4c812/create-heroku-webhook-2-of-2.webp 320w,
+/static/3d7832b165fe0ca1641d5ecf66707258/0ba47/create-heroku-webhook-2-of-2.webp 640w,
+/static/3d7832b165fe0ca1641d5ecf66707258/b2a51/create-heroku-webhook-2-of-2.webp 830w&quot; sizes=&quot;(max-width: 640px) 100vw, 640px&quot; type=&quot;image/webp&quot;&gt;
+          &lt;source srcset=&quot;/static/3d7832b165fe0ca1641d5ecf66707258/69538/create-heroku-webhook-2-of-2.png 160w,
+/static/3d7832b165fe0ca1641d5ecf66707258/72799/create-heroku-webhook-2-of-2.png 320w,
+/static/3d7832b165fe0ca1641d5ecf66707258/6af66/create-heroku-webhook-2-of-2.png 640w,
+/static/3d7832b165fe0ca1641d5ecf66707258/715a3/create-heroku-webhook-2-of-2.png 830w&quot; sizes=&quot;(max-width: 640px) 100vw, 640px&quot; type=&quot;image/png&quot;&gt;
+          &lt;img class=&quot;gatsby-resp-image-image&quot; src=&quot;/static/3d7832b165fe0ca1641d5ecf66707258/6af66/create-heroku-webhook-2-of-2.png&quot; alt=&quot;Create Heroku Webhook 2 of 2&quot; title=&quot;Create Heroku Webhook 2 of 2&quot; loading=&quot;lazy&quot; style=&quot;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&quot;&gt;
+        &lt;/picture&gt;
+    &lt;/span&gt;
+&lt;p&gt;To test your setup, you can create a new config var in your Heroku app. To do this, navigate to the &lt;code class=&quot;language-text&quot;&gt;Settings&lt;/code&gt; tab in your Heroku app, click &lt;code class=&quot;language-text&quot;&gt;Reveal Config Vars&lt;/code&gt; and create a new key. It doesn’t matter what you put in as the key name – we just want to create a new release so Heroku calls your webhook.&lt;/p&gt;
+&lt;p&gt;&lt;span
+      class=&quot;gatsby-resp-image-wrapper&quot;
+      style=&quot;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 640px; &quot;
+    &gt;
+      &lt;span
+    class=&quot;gatsby-resp-image-background-image&quot;
+    style=&quot;padding-bottom: 65.625%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAANCAIAAAAmMtkJAAAACXBIWXMAAAsTAAALEwEAmpwYAAABNklEQVQoz41SC07DMAzNzbd87djtYOcBbgDiDoDG1g7OwHNKgdExYUWRnfjlPdtxfpVzohQp+Bxi9j4RMZFgMf9exNWSQ0F+yezETNsutc6+KvzK0i1MdXa6zi2TVJWZ9Svrb3NIUtEFuEI8dtNg1p19yi2PqplsNn3JOZdyQcJZsJRCkwNysP8X3DdMjAmEUJ5SYZNvWqy+VsYl5omzpWrrvzQ8T6GB+643s4bNPqIfPfvWcmIIO6n4BdZL5330IcWUU8rA2J1IiAlc2l6RJgHKufECVApTgZTqoAhDaYPhuea6Wvu1DyGi9oSbXGjtI0IfsCeMoP2o6k40zUqn54inmV3hxP4Slny2bHu97fvNScOAJ6Kb27vj2/thGIZxHMbjOB5fdq+7/QHOdLI/DE/Pr/cPjx/e07N2M+JhTQAAAABJRU5ErkJggg==&apos;); background-size: cover; display: block;&quot;
+  &gt;&lt;/span&gt;
+  &lt;picture&gt;
+          &lt;source
+              srcset=&quot;/static/a511cca3200f52aa91aa8ffeace62320/60a22/heroku-set-config-var.webp 160w,
+/static/a511cca3200f52aa91aa8ffeace62320/4c812/heroku-set-config-var.webp 320w,
+/static/a511cca3200f52aa91aa8ffeace62320/0ba47/heroku-set-config-var.webp 640w,
+/static/a511cca3200f52aa91aa8ffeace62320/e46b2/heroku-set-config-var.webp 960w,
+/static/a511cca3200f52aa91aa8ffeace62320/af3f0/heroku-set-config-var.webp 1280w,
+/static/a511cca3200f52aa91aa8ffeace62320/ad234/heroku-set-config-var.webp 2310w&quot;
+              sizes=&quot;(max-width: 640px) 100vw, 640px&quot;
+              type=&quot;image/webp&quot;
+            /&gt;
+          &lt;source
+            srcset=&quot;/static/a511cca3200f52aa91aa8ffeace62320/69538/heroku-set-config-var.png 160w,
+/static/a511cca3200f52aa91aa8ffeace62320/72799/heroku-set-config-var.png 320w,
+/static/a511cca3200f52aa91aa8ffeace62320/6af66/heroku-set-config-var.png 640w,
+/static/a511cca3200f52aa91aa8ffeace62320/d9199/heroku-set-config-var.png 960w,
+/static/a511cca3200f52aa91aa8ffeace62320/21b4d/heroku-set-config-var.png 1280w,
+/static/a511cca3200f52aa91aa8ffeace62320/828bd/heroku-set-config-var.png 2310w&quot;
+            sizes=&quot;(max-width: 640px) 100vw, 640px&quot;
+            type=&quot;image/png&quot;
+          /&gt;
+          &lt;img
+            class=&quot;gatsby-resp-image-image&quot;
+            src=&quot;/static/a511cca3200f52aa91aa8ffeace62320/6af66/heroku-set-config-var.png&quot;
+            alt=&quot;Set Heroku Config Var&quot;
+            title=&quot;Set Heroku Config Var&quot;
+            loading=&quot;lazy&quot;
+            style=&quot;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&quot;
+          /&gt;
+        &lt;/picture&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;Hopefully, you’re all set! You can double-check by navigating to the directory with your &lt;code class=&quot;language-text&quot;&gt;docker-compose.yaml&lt;/code&gt; file and seeing that the &lt;code class=&quot;language-text&quot;&gt;.env&lt;/code&gt; file matches your Heroku database credentials.&lt;/p&gt;
+&lt;p&gt;Now, any Heroku database maintenance will not be much of a problem for you or your app (except for a few seconds of downtime while the credentials are updated).&lt;/p&gt;
+&lt;h2 id=&quot;conclusion&quot; style=&quot;position:relative;&quot;&gt;&lt;a href=&quot;#conclusion&quot; aria-label=&quot;conclusion permalink&quot; class=&quot;anchor before&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; focusable=&quot;false&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;I hope you found this guide helpful! Again, if you have any suggestions or comments, please email me at &lt;a href=&quot;mailto:bhollander823@gmail.com?subject=Your Hasura Article&quot;&gt;bhollander823@gmail.com&lt;/a&gt; 👋&lt;/p&gt;</content:encoded></item></channel></rss>
