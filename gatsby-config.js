@@ -112,7 +112,7 @@ module.exports = {
           {
             resolve: 'gatsby-remark-images',
             options: {
-              maxWidth: 960,
+              maxWidth: 640,
               withWebp: true
             }
           },
@@ -187,7 +187,7 @@ module.exports = {
         theme_color: '#F7A046',
         display: 'standalone',
         icon: 'static/photo.jpg'
-      },
+      }
     },
     {
       resolve: 'gatsby-plugin-offline',
@@ -197,27 +197,27 @@ module.exports = {
             // Use cacheFirst since these don't need to be revalidated (same RegExp
             // and same reason as above)
             urlPattern: /(\.js$|\.css$|[^:]static\/)/,
-            handler: 'CacheFirst',
+            handler: 'CacheFirst'
           },
           {
             // page-data.json files, static query results and app-data.json
             // are not content hashed
             urlPattern: /^https?:.*\/page-data\/.*\.json/,
-            handler: 'StaleWhileRevalidate',
+            handler: 'StaleWhileRevalidate'
           },
           {
             // Add runtime caching of various other page resources
             urlPattern: /^https?:.*\.(png|jpg|jpeg|webp|svg|gif|tiff|js|woff|woff2|json|css)$/,
-            handler: 'StaleWhileRevalidate',
+            handler: 'StaleWhileRevalidate'
           },
           {
             // Google Fonts CSS (doesn't end in .css so we need to specify it)
             urlPattern: /^https?:\/\/fonts\.googleapis\.com\/css/,
-            handler: 'StaleWhileRevalidate',
-          },
-          ],
-        },
-      },
+            handler: 'StaleWhileRevalidate'
+          }
+          ]
+        }
+      }
     },
     'gatsby-plugin-catch-links',
     'gatsby-plugin-react-helmet',

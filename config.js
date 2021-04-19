@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 module.exports = {
   url: 'https://blog.byrnehollander.com',
@@ -8,7 +8,7 @@ module.exports = {
   copyright: '© All rights reserved.',
   disqusShortname: '',
   postsPerPage: 4,
-  googleAnalyticsId: 'UA-73379983-2',
+  googleAnalyticsId: 'G-541S3JVEHN',
   useKatex: false,
   menu: [
     {
@@ -31,20 +31,7 @@ module.exports = {
     contacts: {
       email: 'bhollander823@gmail.com',
       github: 'byrnehollander',
-      linkedin: 'byrnehollander',
-      facebook: '#',
-      telegram: '#',
-      twitter: '#',
-      rss: '',
-      vkontakte: '',
-      instagram: '#',
-      line: '',
-      gitlab: '',
-      weibo: '',
-      codepen: '',
-      youtube: '',
-      soundcloud: '',
-      medium: ''
+      linkedin: 'byrnehollander'
     }
   }
-};
+}
