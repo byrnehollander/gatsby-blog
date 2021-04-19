@@ -43,7 +43,7 @@ I've been building [Trivia.Digital](https://trivia.digital) with Hasura as my ba
 
 The biggest _potential_ downside of Hasura is that it can be relatively expensive for a hobbyist to use it for a side project. But it doesn't have to be that way! Because their GraphQL Engine is open-source, I've been running it on [DigitalOcean](https://www.digitalocean.com/) for just $5/month.
 
-**This post explains how you, too, can run Hasura for $5/month while avoiding some potential pitfalls.** _Caveat_: I am not an expert on any of these topics, so my apologies if I've gotten anything wrong. If you have any suggestions, please email me at bhollander823@gmail.com.
+**This post explains how you, too, can run Hasura for $5/month while avoiding some potential pitfalls.** _Caveat_: I am not an expert on any of these topics, so my apologies if I've gotten anything wrong. If you have any suggestions, please email me at <a href="mailto:bhollander823@gmail.com?subject=Your Hasura Article">bhollander823@gmail.com</a>.
 
 Of course, this low bill is only possible because so many companies offer free plans for small projects. A _huge_ thank you to all of these companies for making their tools so accessible.
 <details>
@@ -52,7 +52,7 @@ Of course, this low bill is only possible because so many companies offer free p
   I'm using a 1-5 ⭐ system for how highly I recommend each tool, and I've included some information about their financial situation so you can get a better sense of how likely they are to stick around. Hasura gets five stars from me (and they
   <a href="https://hasura.io/blog/announcing-our-series-b-25m-financing/" target="_blank">raised a Series B in September 2020</a>).
 
-  </br></br>
+  </br>
 
   ⭐⭐⭐⭐⭐ 
   * [Vercel](https://vercel.com/) – Vercel is a "deployment and collaboration platform for frontend developers." I'm hosting my frontend with them. They are the creators of the [Next.js React framework](https://nextjs.org/) and also maintain [Geist](https://github.com/geist-org/react), a minimal React UI library that I also use in my project. They last raised a [Series B round](https://vercel.com/blog/series-b-40m-to-build-the-next-web) in December 2020.
@@ -88,7 +88,7 @@ You might now be thinking, "If I'm going to host my database on Heroku, why don'
 
 ## The Biggest Issue With These Hosting Choices
 
-**The biggest downside to this approach is that you must manually sync your Heroku database URL with your self-hosted Hasura GraphQL Engine.** Before I implemented what I describe below, **my site was unusable after Heroku maintenance**.
+**The biggest downside to this approach is that you must manually sync your Heroku database URL with your self-hosted Hasura GraphQL Engine.** Before I implemented what I describe below, **my site was unusable after Heroku maintenance**. It doesn't matter if you're using a Dyno, a Droplet, or something else to self-host – your Heroku database credentials will eventually rotate and you'll want to be prepared.
 
 ### Why You Need This
 
@@ -198,7 +198,7 @@ To test your setup, you can create a new config var in your Heroku app. To do th
 
 Hopefully, you're all set! You can double-check by navigating to the directory with your `docker-compose.yaml` file and seeing that the `.env` file matches your Heroku database credentials.
 
-Now, any Heroku database maintenance will not be much of a problem for you or your app (except for a few seconds of downtime while the credentials are updated).
+Now, any Heroku database maintenance will not be much of a problem for you or your app. Heroku will put your database in read-only mode for up to an hour (but usually much shorter), and you will have just a few seconds of downtime while the credentials are updated.
 
 ## Conclusion
 
