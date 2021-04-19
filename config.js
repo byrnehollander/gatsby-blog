@@ -14,20 +14,12 @@ module.exports = {
     {
       label: 'Articles',
       path: '/'
-    },
-    {
-      label: 'About me',
-      path: '/pages/about'
-    },
-    {
-      label: 'Contact me',
-      path: '/pages/contacts'
     }
   ],
   author: {
     name: 'Byrne Hollander',
     photo: '/photo.jpg',
-    bio: 'Programmer and product person living in NYC',
+    bio: 'programmer and product person living in NYC',
     contacts: {
       email: 'bhollander823@gmail.com',
       github: 'byrnehollander',

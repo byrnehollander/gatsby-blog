@@ -1,7 +1,7 @@
-'use strict';
+'use strict'
 
-const siteConfig = require('./config.js');
-const postCssPlugins = require('./postcss-config.js');
+const siteConfig = require('./config.js')
+const postCssPlugins = require('./postcss-config.js')
 
 module.exports = {
   pathPrefix: siteConfig.pathPrefix,
@@ -186,7 +186,7 @@ module.exports = {
         background_color: '#FFF',
         theme_color: '#F7A046',
         display: 'standalone',
-        icon: 'static/photo.jpg'
+        icon: 'static/favicon.png'
       }
     },
     {
@@ -241,4 +241,4 @@ module.exports = {
     'gatsby-plugin-flow',
     'gatsby-plugin-optimize-svgs'
   ]
-};
+}
