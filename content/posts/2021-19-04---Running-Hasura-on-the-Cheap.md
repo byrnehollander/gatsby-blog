@@ -1,6 +1,6 @@
 ---
 title: Running Hasura on the Cheap
-date: "2020-04-19T12:40:32.169Z"
+date: "2021-04-19T12:40:32.169Z"
 template: "post"
 draft: false
 slug: "running-hasura-cheaply"
